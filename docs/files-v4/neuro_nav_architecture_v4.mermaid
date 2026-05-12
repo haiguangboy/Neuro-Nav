@@ -1,0 +1,93 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#1565c0', 'primaryBorderColor': '#1565c0', 'lineColor': '#333'}}}%%
+
+flowchart TB
+    subgraph APP["🎯 app (应用层)"]
+        SDK["Python SDK"]
+        ROS2["ROS2 Node"]
+        CLI["CLI"]
+    end
+
+    subgraph CORE["⚙️ core (导航核心)"]
+        direction TB
+        subgraph PLANNER["planner"]
+            GLOBAL["全局规划<br/>NavFn/Smac/VLN"]
+            LOCAL_W["轮式局部<br/>TEB/MPPI/DWA"]
+            LOCAL_L["足式局部<br/>Footstep"]
+            MODEL["模型驱动<br/>NavDP/VLA-N1"]
+        end
+        DECISION["decision<br/>行为树/模式选择"]
+        TRAJ["trajectory<br/>融合/验证/优化"]
+        MAP["map_manager"]
+    end
+
+    subgraph ROBOT["🤖 robot (机器人抽象)"]
+        direction LR
+        subgraph WHEELED["轮式"]
+            DIFF["差速"]
+            ACK["阿克曼"]
+            TRI["三轮叉车"]
+            OMNI["全向"]
+        end
+        subgraph LEGGED["足式"]
+            QUAD["四足"]
+            BIPED["双足"]
+        end
+    end
+
+    subgraph PERCEPTION["👁️ perception (感知层)"]
+        direction TB
+        NVBLOX["★ nvblox<br/>TSDF→ESDF→Costmap"]
+        ELEVATION["elevation_map<br/>(足式专用)"]
+        OBSTACLE["obstacle<br/>动态障碍物追踪"]
+        FUSION["sensor_fusion"]
+    end
+
+    subgraph INTERFACE["🔌 interface (接口层)"]
+        direction TB
+        UP["upstream<br/>定位/感知/模型"]
+        DOWN["downstream<br/>控制器/输出"]
+        COMM["communication<br/>ROS2/MQTT/gRPC"]
+        SENSOR["sensor<br/>Camera/LiDAR/Depth"]
+    end
+
+    subgraph SIM["🎮 simulation (仿真层)"]
+        ISIM["Isaac Sim"]
+        ILAB["Isaac Lab"]
+        GAZ["Gazebo"]
+    end
+
+    subgraph COMMON["📦 common (公共基础)"]
+        MATH["math<br/>变换/插值/优化"]
+        GEOM["geometry<br/>碰撞/距离"]
+        DATA["data<br/>Pose/Trajectory"]
+        TIME["time/log/config"]
+    end
+
+    %% 依赖关系
+    APP --> CORE
+    CORE --> ROBOT
+    CORE --> PERCEPTION
+    CORE --> INTERFACE
+    CORE --> SIM
+
+    ROBOT --> COMMON
+    PERCEPTION --> COMMON
+    INTERFACE --> COMMON
+    SIM --> COMMON
+
+    LOCAL_W -.-> WHEELED
+    LOCAL_L -.-> LEGGED
+    
+    NVBLOX -.-> |Costmap| MAP
+    ELEVATION -.-> |地形| LOCAL_L
+
+    %% 样式
+    classDef coreStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef robotStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef perceptionStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef commonStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    
+    class CORE coreStyle
+    class ROBOT robotStyle
+    class PERCEPTION perceptionStyle
+    class COMMON commonStyle

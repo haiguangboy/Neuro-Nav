@@ -1,0 +1,85 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#1565c0', 'primaryBorderColor': '#1565c0', 'lineColor': '#333', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#f3e5f5'}}}%%
+
+flowchart TB
+    subgraph APP["🎯 app: 业务入口层"]
+        SDK["Python SDK"]
+        ROS2_API["ROS2 API"]
+        VLA_IN["VLA Agent"]
+    end
+
+    subgraph CORE["⚙️ core: 导航核心"]
+        subgraph PLANNER["planner: 规划器"]
+            direction TB
+            TRAD["Traditional<br/>Nav2/TEB/MPPI"]
+            INTERN["★ InternNav<br/>VLA-N1/NavDP<br/>StreamVLN"]
+            E2E["E2E<br/>GNM/ViNT/NoMaD"]
+        end
+        
+        subgraph DECISION["decision: 决策"]
+            BT["Behavior Tree"]
+            MODE["Mode Selector"]
+        end
+        
+        subgraph TRAJ["trajectory: 轨迹"]
+            FUSION["轨迹融合"]
+            CONVERT["★ 协议转换"]
+        end
+        
+        MAP["map_manager"]
+        STANCE["stance_generator"]
+    end
+
+    subgraph COMM["🌐 communication: 跨主机通信"]
+        direction TB
+        ROS2_LOCAL["ROS2 Local<br/>(同主机)"]
+        MQTT["★ MQTT Bridge<br/>(跨主机/中力协议)"]
+        GRPC["★ gRPC<br/>(模型推理)"]
+        ZMQ["ZeroMQ<br/>(低延迟)"]
+    end
+
+    subgraph INTERFACE["🔌 interface: 接口层"]
+        subgraph UP["upstream"]
+            LOC["定位<br/>xyz-slam"]
+            PERC["感知"]
+            INTERN_BRIDGE["★ InternNav桥接"]
+        end
+        
+        subgraph DOWN["downstream"]
+            CTRL["控制器"]
+            CMD["cmd_vel"]
+        end
+    end
+
+    subgraph EXTERNAL["🌍 外部系统"]
+        SLAM["xyz-slam<br/>(定位主机)"]
+        PLC["PLC控制器<br/>(控制主机)"]
+        GPU["GPU Server<br/>(推理服务)"]
+        INTERN_MODEL["InternNav模型<br/>VLA-N1/NavDP"]
+    end
+
+    %% 连接
+    APP --> CORE
+    CORE --> COMM
+    CORE --> INTERFACE
+    
+    PLANNER --> TRAJ
+    DECISION --> PLANNER
+    
+    TRAJ --> CONVERT
+    CONVERT --> COMM
+    
+    ROS2_LOCAL -.-> |本机| CTRL
+    MQTT -.-> |跨主机| PLC
+    GRPC -.-> |推理| GPU
+    
+    INTERN_BRIDGE <-.-> INTERN_MODEL
+    LOC <-.-> SLAM
+
+    %% 样式
+    classDef coreStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef commStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef externStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    
+    class CORE coreStyle
+    class COMM commStyle
+    class EXTERNAL externStyle

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNeMo论文解读</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            line-height: 1.8;
+        }
+        
+        .container {
+            width: 750px;
+            margin: 0 auto;
+            background: #fff;
+        }
+        
+        /* 封面页 */
+        .cover {
+            padding: 60px 50px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .reading-info {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        
+        .reading-info::before {
+            content: "◎";
+            margin-right: 8px;
+        }
+        
+        .main-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 30px;
+            color: #1a1a1a;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #333;
+            padding-left: 16px;
+            border-left: 4px solid #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        /* 内容区 */
+        .section {
+            padding: 50px;
+        }
+        
+        .section-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #1a1a1a;
+        }
+        
+        .subsection-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 35px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #1a1a1a;
+        }
+        
+        p {
+            font-size: 17px;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        
+        .highlight {
+            background: linear-gradient(to bottom, transparent 60%, #fff3cd 60%);
+            padding: 0 2px;
+        }
+        
+        .bullet-list {
+            margin: 20px 0;
+            padding-left: 0;
+        }
+        
+        .bullet-list li {
+            list-style: none;
+            padding-left: 24px;
+            position: relative;
+            margin-bottom: 16px;
+            font-size: 17px;
+        }
+        
+        .bullet-list li::before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: #1a1a1a;
+        }
+        
+        .term {
+            font-weight: 500;
+        }
+        
+        .english {
+            color: #666;
+            font-size: 15px;
+        }
+        
+        /* 对比框 */
+        .comparison-box {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .comparison-item {
+            margin-bottom: 20px;
+        }
+        
+        .comparison-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .comparison-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        /* 流程图 */
+        .flow-chart {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .flow-step {
+            display: inline-block;
+            background: #fff;
+            border: 2px solid #1a1a1a;
+            border-radius: 6px;
+            padding: 12px 20px;
+            margin: 8px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .flow-arrow {
+            display: block;
+            font-size: 20px;
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        /* 数据高亮 */
+        .data-highlight {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .data-row:last-child {
+            border-bottom: none;
+        }
+        
+        .data-label {
+            font-size: 15px;
+        }
+        
+        .data-value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        /* 引用框 */
+        .quote-box {
+            border-left: 4px solid #1a1a1a;
+            padding: 20px 25px;
+            background: #f9f9f9;
+            margin: 25px 0;
+            font-size: 16px;
+            color: #444;
+        }
+        
+        /* 表格 */
+        .simple-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 15px;
+        }
+        
+        .simple-table th,
+        .simple-table td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        .simple-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        /* 脚注 */
+        .footnote {
+            font-size: 14px;
+            color: #888;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* 标签 */
+        .tags {
+            padding: 40px 50px;
+            background: #fafafa;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px 12px;
+            margin: 4px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* 分隔符 */
+        .divider {
+            height: 1px;
+            background: #eee;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 封面页 -->
+        <div class="cover">
+            <div class="reading-info">本文共2800字，阅读需7分钟</div>
+            <h1 class="main-title">LLM做导航为什么总是"瞎走"？深大团队用世界模型破局</h1>
+            <p class="subtitle">UNeMo通过多模态世界模型与分层预测反馈机制，让导航智能体不仅能"看到"当前环境，还能"预见"下一步场景，在未见环境中导航成功率达72.5%。AAAI 2026已中稿。</p>
+        </div>
+        
+        <!-- 摘要 -->
+        <div class="section">
+            <p>在迈向通用具身智能的进程中，视觉语言导航（VLN）领域存在一个核心矛盾：<span class="highlight">大语言模型擅长理解指令，却缺乏空间推理能力</span>。现有方法让LLM处理"穿过客厅左转"这样的指令，但模型根本不知道"左转之后会看到什么"。</p>
+            
+            <p>深圳大学李坚强教授团队联合北京理工莫斯科大学，提出了<span class="term">UNeMo</span>框架，核心突破在于构建"多模态世界模型+分层预测反馈导航器"的双向协同架构，将视觉状态推理与导航决策深度绑定。</p>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <!-- 1. 问题背景 -->
+        <div class="section">
+            <h2 class="section-title">1. 问题背景：LLM导航的两大硬伤</h2>
+            
+            <p>当前LLM-based VLN方法（如NavGPT2）存在两个根本缺陷：</p>
+            
+            <ul class="bullet-list">
+                <li><span class="term">推理局限于语言模态</span>：LLM能理解自然语言指令的语义，但无法"想象"执行动作后会观测到什么视觉场景。这就像一个人闭着眼睛听导航指令，却看不到前方的路。</li>
+                <li><span class="term">推理与决策相互脱节</span>：NavGPT2在训练导航策略时冻结了LLM推理模块，导致推理过程无法根据策略训练进度动态优化，两者形成"信息孤岛"。</li>
+            </ul>
+            
+            <div class="quote-box">
+                传统方法的拓扑图只编码历史状态（去过哪里、看到了什么），而缺乏对未来状态的预测能力。这就像只看后视镜开车。
+            </div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <!-- 2. 方法论 -->
+        <div class="section">
+            <h2 class="section-title">2. 方法论：两步实现"预见未来"</h2>
+            
+            <h3 class="subsection-title">2.1 多模态世界模型 <span class="english">(Multimodal World Model, MWM)</span></h3>
+            
+            <p>MWM的核心任务是回答一个问题：<span class="highlight">"如果我执行这个动作，接下来会看到什么？"</span></p>
+            
+            <p>技术实现采用条件变分自编码器（CVAE）：</p>
+            
+            <div class="flow-chart">
+                <div class="flow-step">当前局部视觉特征 + 语言指令</div>
+                <span class="flow-arrow">↓</span>
+                <div class="flow-step">Cross-Attention编码器（3层）</div>
+                <span class="flow-arrow">↓</span>
+                <div class="flow-step">均值μ + 方差σ² → 重参数化采样</div>
+                <span class="flow-arrow">↓</span>
+                <div class="flow-step">MLP解码 → 预测的下一步视觉状态</div>
+            </div>
+            
+            <p>为什么用CVAE而非简单的MLP？因为视觉状态具有内在不确定性——同一动作可能导致略有不同的观测，CVAE的潜变量空间可以捕捉这种分布特性。</p>
+            
+            <h3 class="subsection-title">2.2 分层预测反馈导航器 <span class="english">(Hierarchical Prediction-Feedback Navigator, HPFN)</span></h3>
+            
+            <p>HPFN采用"粗粒度决策→世界模型预测→细粒度决策"的闭环架构：</p>
+            
+            <div class="comparison-box">
+                <div class="comparison-item">
+                    <div class="comparison-label">第一层决策</div>
+                    <div>当前节点嵌入 V_t → FFN → 粗粒度动作 a'（选择最高分节点j）</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">MWM推理</div>
+                    <div>预测执行a'后的视觉状态 Ŝ_{t+1}</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">特征融合</div>
+                    <div>Cross-Attention将预测状态注入节点嵌入 → 增强表示 V'_t</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">第二层决策</div>
+                    <div>V'_t → FFN → 细粒度动作 a''（最终执行）</div>
+                </div>
+            </div>
+            
+            <p>这形成了<span class="highlight">双向促进机制</span>：策略决策反馈优化世界模型的预测，世界模型的推理结果又持续优化导航策略。两者不再是"各干各的"，而是协同进化。</p>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <!-- 3. 实验结果 -->
+        <div class="section">
+            <h2 class="section-title">3. 实验结果：数据说话</h2>
+            
+            <h3 class="subsection-title">3.1 R2R数据集表现</h3>
+            
+            <div class="data-highlight">
+                <div class="data-row">
+                    <span class="data-label">未见环境成功率 (SR)</span>
+                    <span class="data-value">72.5%</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">相比NavGPT2提升</span>
+                    <span class="data-value">+2.1%</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">预测与真实标签余弦相似度</span>
+                    <span class="data-value">90.15%</span>
+                </div>
+            </div>
+            
+            <h3 class="subsection-title">3.2 长轨迹导航优势显著</h3>
+            
+            <p>UNeMo在不同路径长度上的提升幅度差异明显：</p>
+            
+            <table class="simple-table">
+                <tr>
+                    <th>路径长度</th>
+                    <th>SR提升</th>
+                    <th>说明</th>
+                </tr>
+                <tr>
+                    <td>短路径（&lt;7步）</td>
+                    <td>+1.2%</td>
+                    <td>提升有限</td>
+                </tr>
+                <tr>
+                    <td>长路径（≥7步）</td>
+                    <td>+5.6%</td>
+                    <td>优势显著</td>
+                </tr>
+            </table>
+            
+            <p>这说明<span class="highlight">前瞻能力在复杂任务中价值更大</span>——智能体需要"看得更远"才能做出全局最优决策。</p>
+            
+            <h3 class="subsection-title">3.3 资源效率</h3>
+            
+            <p>UNeMo用30%的参数量实现了更好的效果：</p>
+            
+            <table class="simple-table">
+                <tr>
+                    <th>配置</th>
+                    <th>参数量</th>
+                    <th>显存占用</th>
+                    <th>SR</th>
+                </tr>
+                <tr>
+                    <td>NavGPT2</td>
+                    <td>FlanT5-5B</td>
+                    <td>27GB</td>
+                    <td>71%</td>
+                </tr>
+                <tr>
+                    <td>UNeMo</td>
+                    <td>FlanT5-1.5B</td>
+                    <td>12GB</td>
+                    <td>72.5%</td>
+                </tr>
+            </table>
+            
+            <p>这对边缘部署（如NVIDIA Orin NX）非常友好。</p>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <!-- 4. 消融实验 -->
+        <div class="section">
+            <h2 class="section-title">4. 消融实验：每个模块都不可或缺</h2>
+            
+            <p>论文通过消融实验验证了各组件的贡献：</p>
+            
+            <table class="simple-table">
+                <tr>
+                    <th>配置</th>
+                    <th>SR</th>
+                    <th>说明</th>
+                </tr>
+                <tr>
+                    <td>仅MWM（无HPFN）</td>
+                    <td>71.5%</td>
+                    <td>世界模型单独作为辅助分支</td>
+                </tr>
+                <tr>
+                    <td>仅第一层动作 a'</td>
+                    <td>72.1%</td>
+                    <td>不用MWM预测</td>
+                </tr>
+                <tr>
+                    <td><b>仅第二层动作 a''</b></td>
+                    <td><b>72.9%</b></td>
+                    <td><b>整合MWM推理，最优</b></td>
+                </tr>
+                <tr>
+                    <td>a' 和 a'' 联合学习</td>
+                    <td>72.1%</td>
+                    <td>反而下降</td>
+                </tr>
+            </table>
+            
+            <div class="quote-box">
+                关键发现：让决策直接受益于世界模型预测，比简单的多任务学习更有效。世界模型不应是"旁观者"，要和决策深度绑定。
+            </div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <!-- 5. 启示 -->
+        <div class="section">
+            <h2 class="section-title">5. 对具身智能行业的启示</h2>
+            
+            <ul class="bullet-list">
+                <li><span class="term">世界模型与策略要联合优化</span>：当前很多工作把世界模型当作独立的预训练组件（如Dreamer系列），与下游策略学习分离。UNeMo证明了协同进化的价值。</li>
+                
+                <li><span class="term">从"理解指令"到"预见结果"</span>：主流VLA方法（RT-2、OpenVLA等）本质上是在做"指令→动作"的映射，缺乏对动作后果的显式建模。UNeMo提供了一条思路：在决策回路中引入显式的状态预测。</li>
+                
+                <li><span class="term">资源效率是落地关键</span>：用更少参数实现更好效果，对边缘部署意义重大。传统规划算法+轻量世界模型的组合，可能是工业机器人的务实路线。</li>
+                
+                <li><span class="term">长程任务需要前瞻能力</span>：对于需要多步规划的场景（如仓储物流、服务机器人），"看得更远"的能力至关重要。</li>
+            </ul>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <!-- 6. 局限与展望 -->
+        <div class="section">
+            <h2 class="section-title">6. 局限与展望</h2>
+            
+            <ul class="bullet-list">
+                <li><span class="term">仿真到现实的鸿沟</span>：论文使用Matterport3D真实数据缩小了视觉gap，但尚未在物理机器人上验证。</li>
+                
+                <li><span class="term">单步预测的局限</span>：目前只预测下一步状态，多步rollout可能带来更大收益。</li>
+                
+                <li><span class="term">指令粒度依赖</span>：在REVERIE（粗粒度指令）上SPL略有下降，说明探索行为增加了路径长度。</li>
+            </ul>
+            
+            <p class="footnote">论文已入选AAAI 2026，实验在RTX 4090单卡上完成，部署门槛相对友好。</p>
+        </div>
+        
+        <!-- 标签 -->
+        <div class="tags">
+            <span class="tag">#具身智能</span>
+            <span class="tag">#VLN</span>
+            <span class="tag">#世界模型</span>
+            <span class="tag">#视觉语言导航</span>
+            <span class="tag">#机器人导航</span>
+            <span class="tag">#AAAI2026</span>
+            <span class="tag">#深度学习</span>
+            <span class="tag">#多模态</span>
+        </div>
+    </div>
+</body>
+</html>

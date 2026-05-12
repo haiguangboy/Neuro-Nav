@@ -1,0 +1,124 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#1565c0', 'primaryBorderColor': '#1565c0', 'lineColor': '#333', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#f3e5f5'}}}%%
+
+flowchart TB
+    subgraph APP["🎯 app: 业务入口层"]
+        direction TB
+        SDK["Python SDK<br/>agent.go_to()"]
+        ROS2_API["ROS2 Action/Service"]
+        VLA_IN["VLA Agent 接入"]
+        CLI["命令行工具"]
+    end
+
+    subgraph CORE["⚙️ core: 导航核心"]
+        direction TB
+        
+        subgraph DECISION["decision: 决策引擎"]
+            BT["Behavior Tree<br/>行为树调度"]
+            MODE["Mode Selector<br/>规划模式选择"]
+            RECOVERY["Recovery Handler<br/>异常恢复"]
+        end
+        
+        subgraph PLANNER["planner: 规划器 (可插拔)"]
+            TRAD["Traditional<br/>Nav2/TEB/MPPI"]
+            LEARNED["Learned<br/>VLN/GNM/NoMaD"]
+            HYBRID["Hybrid<br/>语义+局部"]
+        end
+        
+        subgraph MAP_MGR["map_manager: 地图管理"]
+            GLOBAL_MAP["Global Map<br/>Costmap/Semantic/Topo"]
+            LOCAL_MAP["Local Map<br/>Rolling Costmap"]
+            NO_MAP["No Map Mode<br/>E2E直出"]
+        end
+        
+        subgraph TRAJ["trajectory: 轨迹处理"]
+            FUSION["轨迹融合"]
+            VALIDATE["可行性验证"]
+            SMOOTH["轨迹平滑"]
+        end
+        
+        STANCE["Stance Generator<br/>操作位姿生成"]
+    end
+
+    subgraph INTERFACE["🔌 interface: 接口层"]
+        direction TB
+        
+        subgraph UPSTREAM["upstream: 上游输入"]
+            LOC_IF["Localization<br/>定位接口"]
+            PERC_IF["Perception<br/>感知接口"]
+            VLA_BRIDGE["VLA Bridge<br/>模型桥接"]
+        end
+        
+        subgraph DOWNSTREAM["downstream: 下游输出"]
+            CTRL_IF["Controller<br/>控制接口"]
+            CMD_VEL["cmd_vel<br/>速度指令"]
+            TRAJ_OUT["Trajectory<br/>轨迹输出"]
+        end
+        
+        subgraph COMM["communication: 通信"]
+            ROS2_ADAPT["ROS2 Adapter"]
+            DDS_ADAPT["DDS Adapter"]
+            GRPC_ADAPT["gRPC Adapter"]
+        end
+    end
+
+    subgraph SENSOR["📡 sensor: 传感器适配"]
+        CAM["Camera"]
+        LIDAR["LiDAR"]
+        DEPTH["Depth"]
+        ODOM["Odometry"]
+    end
+
+    subgraph NAV2["🧱 Nav2 基座"]
+        BT_NAV["BT Navigator"]
+        PLANNER_SRV["Planner Server"]
+        CTRL_SRV["Controller Server"]
+        COSTMAP["Costmap 2D"]
+        LIFECYCLE["Lifecycle Mgmt"]
+    end
+
+    subgraph EXTERNAL["🌐 外部模块"]
+        LOC_MOD["定位模块<br/>xyz-slam"]
+        PERC_MOD["感知模块"]
+        CTRL_MOD["控制模块"]
+        VLA_MOD["VLA模型<br/>π0/RT-2"]
+    end
+
+    %% 连接关系
+    SDK --> DECISION
+    ROS2_API --> DECISION
+    VLA_IN --> DECISION
+    
+    DECISION --> PLANNER
+    DECISION --> MAP_MGR
+    
+    PLANNER --> TRAJ
+    MAP_MGR --> PLANNER
+    
+    TRAJ --> STANCE
+    STANCE --> DOWNSTREAM
+    
+    UPSTREAM --> CORE
+    SENSOR --> UPSTREAM
+    
+    NAV2 -.->|复用| PLANNER
+    NAV2 -.->|复用| MAP_MGR
+    
+    LOC_MOD --> LOC_IF
+    PERC_MOD --> PERC_IF
+    VLA_MOD --> VLA_BRIDGE
+    
+    CTRL_IF --> CTRL_MOD
+    CMD_VEL --> CTRL_MOD
+
+    %% 样式
+    classDef appStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef coreStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef interfaceStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef nav2Style fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef externalStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    
+    class APP appStyle
+    class CORE coreStyle
+    class INTERFACE interfaceStyle
+    class NAV2 nav2Style
+    class EXTERNAL externalStyle
